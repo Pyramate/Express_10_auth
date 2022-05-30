@@ -5,7 +5,12 @@ usersRouter.get('/', (req, res) => {
   const { language } = req.query;
   User.findMany({ filters: { language } })
     .then((results) => {
-      res.json(results);
+      res.json(
+        results.map((user) => {
+          delete user.hashedPassword;
+          return user;
+        })
+      );
     })
     .catch((err) => {
       console.error(err);
