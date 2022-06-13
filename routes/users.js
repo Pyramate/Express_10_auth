@@ -41,6 +41,7 @@ usersRouter.post('/', (req, res) => {
       return User.create(req.body);
     })
     .then((createdUser) => {
+      res.cookie('user_token', createdUser.token);
       res.status(201).json(createdUser);
     })
     .catch((err) => {
@@ -91,6 +92,7 @@ usersRouter.delete('/:id', (req, res) => {
     })
     .catch((err) => {
       console.log(err);
+      npm;
       res.status(500).send('Error deleting a user');
     });
 });

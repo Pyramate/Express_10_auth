@@ -1,6 +1,7 @@
 const connection = require('../db-config');
 const Joi = require('joi');
 const argon2 = require('argon2');
+const { calculateToken } = require('../helpers/users.js');
 
 const hashingOptions = {
   type: argon2.argon2id,
@@ -54,6 +55,12 @@ const findByEmail = (email) => {
     .then(([results]) => results[0]);
 };
 
+const findByToken = (token) => {
+  return db
+    .query('SELECT * FROM users WHERE token = ?', [token])
+    .then(([results]) => results[0]);
+};
+
 const findByEmailWithDifferentId = (email, id) => {
   return db
     .query('SELECT * FROM users WHERE email = ? AND id <> ?', [email, id])
@@ -62,6 +69,8 @@ const findByEmailWithDifferentId = (email, id) => {
 
 const create = ({ firstname, lastname, city, language, email, password }) => {
   return hashPassword(password).then((hashedPassword) => {
+    const token = calculateToken(email);
+
     return db
       .query('INSERT INTO users SET ?', {
         firstname,
@@ -70,10 +79,11 @@ const create = ({ firstname, lastname, city, language, email, password }) => {
         language,
         email,
         hashedPassword,
+        token,
       })
       .then(([result]) => {
         const id = result.insertId;
-        return { firstname, lastname, city, language, email, id };
+        return { firstname, lastname, city, language, email, id, token };
       });
   });
 };
@@ -99,4 +109,5 @@ module.exports = {
   findByEmailWithDifferentId,
   hashPassword,
   verifyPassword,
+  findByToken,
 };
